@@ -41,11 +41,11 @@ The system provides the following RESTful endpoints:
 
 1. **Prerequisites**:
 
-   - Python 3.13.2 (verified with `python --version`)
+   - Python 3.9.18 (verified with `python --version`)
    - AWS credentials configured for Bedrock access (`aws configure`)
    - Project structure:
      ```
-     /recruitment-ai
+     /llama3-recruitment-app
      ├── /static/js/main.js
      ├── /templates/index.html
      ├── app.py
@@ -90,10 +90,10 @@ Deploy the app to AWS Elastic Beanstalk for a live demo:
 - Create `.ebextensions/python.config`:
   ```
   option_settings:
-    aws:elasticbeanstalk:container:python:
-      WSGIPath: app:app
-    aws:elasticbeanstalk:environment:proxy:staticfiles:
-      /static: static
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: app:app
+  aws:elasticbeanstalk:environment:proxy:
+    ProxyServer: nginx
   ```
 
 3. **Initialize EB**:
@@ -157,7 +157,7 @@ name: Deploy to Elastic Beanstalk
 ## Demo
 
 - **Local**: Run locally and test all agents via the UI at `http://localhost:5000`.
-- **Live**: Deployed URL available post-EB setup.
+- **Live**: http://recruitment-ai-env.eba-2ndqjfk6.us-east-1.elasticbeanstalk.com
 - **Video**: A 5-minute walkthrough video should be included in the challenge submission ZIP, demonstrating all agents.
 
 ## Dependencies
