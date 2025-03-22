@@ -58,37 +58,46 @@ def rank_resumes_endpoint():
         data = request.get_json()
         job_description = data.get('job_description', '')
         resumes = data.get('resumes', [])
+
         if not job_description or not resumes:
             return jsonify({'error': 'Missing job_description or resumes'}), 400
+
+        # Call the rank_resumes function
         ranked_resumes = rank_resumes(job_description, resumes)
         return jsonify({'ranked_resumes': ranked_resumes})
     except Exception as e:
         logging.error(f"Rank resumes error: {str(e)}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
-
+    
 @app.route('/automate_email', methods=['POST'])
 def automate_email_endpoint():
     try:
         data = request.get_json()
-        ranked_resumes = data.get('ranked_resumes', '')
+        ranked_resumes = data.get('ranked_resumes', [])
         job_description = data.get('job_description', '')
+
         if not ranked_resumes or not job_description:
             return jsonify({'error': 'Missing ranked_resumes or job_description'}), 400
-        emails = automate_email(ranked_resumes.split('\n'), job_description)
+
+        # Call the automate_email function
+        emails = automate_email(ranked_resumes, job_description)
         return jsonify(emails)
     except Exception as e:
-        logging.error(f"Email error: {str(e)}")
+        logging.error(f"Email automation error: {str(e)}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/schedule_interview', methods=['POST'])
 def schedule_interview_endpoint():
     try:
         data = request.get_json()
-        ranked_resumes = data.get('ranked_resumes', '')
+        ranked_resumes = data.get('ranked_resumes', [])
         interview_times = data.get('interview_times', [])
+
         if not ranked_resumes or not interview_times:
             return jsonify({'error': 'Missing ranked_resumes or interview_times'}), 400
-        confirmations = schedule_interview(ranked_resumes.split('\n'), interview_times)
+
+        # Call the schedule_interview function
+        confirmations = schedule_interview(ranked_resumes, interview_times)
         return jsonify(confirmations)
     except Exception as e:
         logging.error(f"Scheduling error: {str(e)}")

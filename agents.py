@@ -1,4 +1,6 @@
 # agents.py
+import json
+import logging
 import random
 from utils import call_llama3, extract_markdown_block, extract_json_block
 
@@ -15,13 +17,47 @@ def generate_hiring_requirements():
 def generate_resumes(num_resumes=None):
     num_resumes = random.randint(5, 10) if num_resumes is None else num_resumes
     prompt = """
-    You are an AI agent tasked with generating candidate resumes. Provide exactly one JSON array containing {num_resumes} resume strings. Each resume should:
+    You are an AI agent tasked with generating candidate resumes. Provide exactly one JSON array containing {num_resumes} resume objects. Each resume object should:
     - Include a name, years of experience, a list of skills (some matching a typical Software Engineer job), and an email address.
     - Be concise (1-2 sentences).
-    Format the response as a single, valid JSON array of strings enclosed in triple backticks (```) and nothing else.
+    Format the response as a single, valid JSON array of objects enclosed in triple backticks (```) and nothing else.
+    Example: ```
+    [
+        {{
+            "name": "John Doe",
+            "yearsOfExperience": 5,
+            "skills": ["Java", "Python", "SQL"],
+            "email": "john.doe@example.com"
+        }},
+        {{
+            "name": "Jane Smith",
+            "yearsOfExperience": 3,
+            "skills": ["JavaScript", "React", "Node.js"],
+            "email": "jane.smith@example.com"
+        }}
+    ]
+    ```
     """.format(num_resumes=num_resumes)
-    return extract_json_block(call_llama3(prompt))
 
+    try:
+        # Call the LLaMA3 model
+        llama3_response = call_llama3(prompt)
+
+        # Log the raw response for debugging
+        logging.debug(f"LLaMA3 response: {llama3_response}")
+
+        # Extract the JSON block from the response
+        resumes = extract_json_block(llama3_response)
+
+        # Validate that the response is a list of dictionaries
+        if not isinstance(resumes, list) or not all(isinstance(r, dict) for r in resumes):
+            raise ValueError("Invalid response format: Expected a list of dictionaries.")
+
+        return resumes
+    except Exception as e:
+        logging.error(f"Error in generate_resumes: {str(e)}")
+        return {"error": f"Server error: {str(e)}"}
+    
 def generate_jd(job_title, skills, experience_level):
     prompt = f"""
     You are an AI agent for generating job descriptions. Create a detailed job description for:
@@ -33,72 +69,198 @@ def generate_jd(job_title, skills, experience_level):
     """
     return call_llama3(prompt)
 
+import logging
+
 def rank_resumes(job_description, resumes):
-    prompt = """
-    You are an AI agent tasked with ranking candidate resumes against a job description. Given:
-    - Job Description: {job_description}
-    - Resumes: {resumes}
-    Rank the resumes based on how well they match the job requirements. Return a Markdown-formatted list with:
-    - Each line as "- [Name]: [Score] - [Brief reason]"
-    - Scores must be between 50 and 100, reflecting match quality.
-    - No additional commentary or deviations.
-    Return only the list within triple backticks (```).
-    """.format(job_description=job_description, resumes='\n'.join(resumes))
-    return extract_markdown_block(call_llama3(prompt))
+    try:
+        # Log the input resumes for debugging
+        logging.debug(f"Input resumes: {resumes}")
 
-def automate_email(resumes_with_scores, job_description):
-    emails = []
-    if not resumes_with_scores:
+        # Validate that resumes is a list of dictionaries
+        if not isinstance(resumes, list) or not all(isinstance(r, dict) for r in resumes):
+            raise ValueError("Resumes must be a list of dictionaries.")
+
+        # Convert the resumes list to a string for the prompt
+        resumes_str = '\n'.join([json.dumps(resume) for resume in resumes])
+
+        # Log the constructed resumes_str for debugging
+        logging.debug(f"Constructed resumes_str: {resumes_str}")
+
+        # Construct the prompt
+        prompt = f"""
+        You are an AI agent tasked with ranking candidate resumes against a job description. Given:
+        - Job Description: {job_description}
+        - Resumes: {resumes_str}
+        Rank the resumes based on how well they match the job requirements. Return a JSON array where each object contains:
+        - "name" (string): the candidate's name
+        - "score" (integer): a score between 50 and 100 reflecting match quality
+        - "reason" (string): a brief reason for the score
+        Format the response as a single, valid JSON array enclosed in triple backticks (```) and nothing else.
+        Example: ```
+        [
+            {{"name": "John Doe", "score": 85, "reason": "Strong match with Python and Java skills"}},
+            {{"name": "Jane Smith", "score": 70, "reason": "Good match but lacks experience in cloud computing"}}
+        ]
+        ```
+        """
+
+        # Log the constructed prompt for debugging
+        logging.debug(f"Constructed prompt: {prompt}")
+
+        # Call the LLaMA3 model
+        llama3_response = call_llama3(prompt)
+
+        # Log the LLaMA3 response for debugging
+        logging.debug(f"LLaMA3 response: {llama3_response}")
+
+        # Extract the JSON block from the response
+        ranked_resumes = extract_json_block(llama3_response)
+
+        return ranked_resumes
+    except Exception as e:
+        logging.error(f"Error in rank_resumes: {str(e)}")
+        raise ValueError(f"Error ranking resumes: {str(e)}")
+        logging.error(f"Error in rank_resumes: {str(e)}")
+        raise ValueError(f"Error ranking resumes: {str(e)}")
+    
+def automate_email(ranked_resumes, job_description):
+    """
+    Simulates sending emails to candidates based on their ranking.
+    
+    Args:
+        ranked_resumes (list): A list of ranked resumes, each containing:
+            - "name" (str): Candidate's name
+            - "score" (int): Candidate's score
+            - "reason" (str): Reason for the score
+        job_description (str): The job description.
+    
+    Returns:
+        list: A list of simulated email responses.
+    """
+    try:
+        # Log the input for debugging
+        logging.debug(f"Ranked resumes: {ranked_resumes}")
+        logging.debug(f"Job description: {job_description}")
+
+        # Extract job title from the first line of job_description
+        job_title = job_description.splitlines()[0].replace('#', '').strip()
+
+        # Simulate sending emails
+        emails = []
+        for resume in ranked_resumes:
+            try:
+                name = resume.get("name", "Unknown Candidate")
+                score = resume.get("score", 0)
+                reason = resume.get("reason", "")
+                email = resume.get("email", f"{name.lower().replace(' ', '.')}@example.com")
+
+                # Determine the email type based on the score
+                if score >= 70:
+                    message_type = "Interview Invitation"
+                    subject = f"{message_type} for {job_title}"
+                    body = f"Dear {name},\n\nWe are pleased to invite you for an interview for the position of {job_title}.\n\nBest regards,\nHiring Team"
+                else:
+                    message_type = "Application Update"
+                    subject = f"{message_type} for {job_title}"
+                    body = f"Dear {name},\n\nThank you for applying. Unfortunately, we will not be moving forward with your application.\n\nBest regards,\nHiring Team"
+
+                # Simulate the email response
+                emails.append({
+                    "status": "success",
+                    "to": email,
+                    "cc": "hiring.team@example.com",
+                    "subject": subject,
+                    "body": body,
+                    "message": "Email sent successfully"
+                })
+            except Exception as e:
+                logging.error(f"Error processing resume {resume}: {str(e)}")
+                emails.append({
+                    "status": "error",
+                    "to": "unknown@example.com",
+                    "cc": "hiring.team@example.com",
+                    "subject": "Error: Failed to send email",
+                    "body": "An error occurred while processing this candidate.",
+                    "message": str(e)
+                })
+
         return emails
-    for resume_line in resumes_with_scores:
-        if not resume_line.strip():
-            continue
-        try:
-            if ':' not in resume_line or '-' not in resume_line:
-                name, score, email = "Unknown Candidate", 0, "unknown@example.com"
-            else:
-                name = resume_line.split(':')[0].replace('-', '').strip()
-                score = int(resume_line.split(':')[1].split('-')[0].strip() or 0)
-                reason = resume_line.split('-', 1)[1].strip() if '-' in resume_line else ''
-                email = reason.split('email:')[-1].strip() if 'email:' in reason else f"{name.lower().replace(' ', '.')}@example.com"
-
-            message_type = "interview_invite" if score >= 70 else "rejection"
-            subject = f"{message_type.replace('_', ' ').title()} for {job_description.split('\n')[0].replace('#', '').strip()}"
-            body = f"Dear {name},\n{'We invite you to an interview.' if message_type == 'interview_invite' else 'We won’t be moving forward.'}\nBest regards,\n[Your Name]"
-
-            emails.append({
-                "status": "success",
-                "to": email,
-                "cc": "hiring.team@example.com",
-                "subject": subject,
-                "message": "Email sent successfully",
-                "body": body.strip()
-            })
-        except (IndexError, ValueError) as e:
-            print(f"Failed to parse resume: {resume_line} - {str(e)}")
-            continue
-    return emails
-
-def schedule_interview(resumes_with_scores, interview_times):
-    confirmations = []
-    for resume_line, interview_time in zip(resumes_with_scores, interview_times):
-        if not resume_line.strip() or not interview_time:
-            continue
-        name = resume_line.split(':')[0].replace('-', '').strip()
-        email = resume_line.split('email:')[-1].strip() if 'email:' in resume_line else f"{name.lower().replace(' ', '.')}@example.com"
+    except Exception as e:
+        logging.error(f"Error in automate_email: {str(e)}")
+        return [{
+            "status": "error",
+            "to": "unknown@example.com",
+            "cc": "hiring.team@example.com",
+            "subject": "Error: Failed to send emails",
+            "body": "An error occurred while processing the email automation.",
+            "message": str(e)
+        }]
         
-        confirmations.append({
-            "status": "success",
-            "to": email,
+def schedule_interview(ranked_resumes, interview_times):
+    """
+    Simulates scheduling interviews for candidates.
+    
+    Args:
+        ranked_resumes (list): A list of ranked resumes, each containing:
+            - "name" (str): Candidate's name
+            - "email" (str): Candidate's email address
+        interview_times (list): A list of interview times corresponding to the candidates.
+    
+    Returns:
+        list: A list of simulated interview confirmations.
+    """
+    try:
+        # Log the input for debugging
+        logging.debug(f"Ranked resumes: {ranked_resumes}")
+        logging.debug(f"Interview times: {interview_times}")
+
+        # Simulate scheduling interviews
+        confirmations = []
+        for resume, interview_time in zip(ranked_resumes, interview_times):
+            try:
+                name = resume.get("name", "Unknown Candidate")
+                email = resume.get("email", f"{name.lower().replace(' ', '.')}@example.com")
+
+                # Simulate the confirmation response
+                confirmations.append({
+                    "status": "success",
+                    "to": email,
+                    "cc": "hiring.team@example.com",
+                    "event": {
+                        "title": "Interview with Candidate",
+                        "time": interview_time,
+                        "link": f"https://mockcalendar.example.com/invite/{name.lower().replace(' ', '.')}-{interview_time.replace(':', '-')}"
+                    },
+                    "message": "Calendar event created successfully"
+                })
+            except Exception as e:
+                logging.error(f"Error processing resume {resume}: {str(e)}")
+                confirmations.append({
+                    "status": "error",
+                    "to": "unknown@example.com",
+                    "cc": "hiring.team@example.com",
+                    "event": {
+                        "title": "Error: Failed to schedule interview",
+                        "time": "N/A",
+                        "link": "N/A"
+                    },
+                    "message": str(e)
+                })
+
+        return confirmations
+    except Exception as e:
+        logging.error(f"Error in schedule_interview: {str(e)}")
+        return [{
+            "status": "error",
+            "to": "unknown@example.com",
             "cc": "hiring.team@example.com",
             "event": {
-                "title": "Interview with Candidate",
-                "time": interview_time,
-                "link": f"https://mockcalendar.example.com/invite/{name.lower().replace(' ', '.')}-{interview_time.replace(':', '-')}"
+                "title": "Error: Failed to schedule interviews",
+                "time": "N/A",
+                "link": "N/A"
             },
-            "message": "Calendar event created successfully"
-        })
-    return confirmations
+            "message": str(e)
+        }]
 
 def conduct_interview(job_description, candidate_response=None):
     prompt = f"""

@@ -11,7 +11,7 @@ def call_llama3(prompt):
             modelId="arn:aws:bedrock:us-east-1:324037276468:inference-profile/us.meta.llama3-3-70b-instruct-v1:0",
             body=json.dumps({
                 "prompt": prompt,
-                "max_gen_len": 1000,
+                "max_gen_len": 512,
                 "temperature": 0.5,
                 "top_p": 0.9
             }),
