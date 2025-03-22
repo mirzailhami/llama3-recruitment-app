@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitment AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .max-w-5xl { padding-bottom: 60px; }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Recruitment AI Demo</h1>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex justify-between items-center">
+                Jobs Desc Generator
+                <button id="gen-requirements" class="text-sm text-blue-500 hover:underline">Generate Requirements</button>
+            </h2>
+            <form id="jd-form">
+                <input type="text" id="job_title" placeholder="Job Title" class="border p-2 mb-2 w-full">
+                <input type="text" id="skills" placeholder="Skills (comma-separated)" class="border p-2 mb-2 w-full">
+                <select id="experience_level" class="border p-2 mb-2 w-full">
+                    <option value="Entry">Entry</option>
+                    <option value="Mid">Mid</option>
+                    <option value="Senior">Senior</option>
+                </select>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Generate JD</button>
+            </form>
+            <textarea readonly id="jd-output" class="mt-4 p-2 rounded hidden whitespace-pre-wrap w-full h-48 border"></textarea>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex justify-between items-center">
+                Resume Ranker
+                <button id="gen-resumes" class="text-sm text-blue-500 hover:underline">Generate Resumes</button>
+            </h2>
+            <form id="resume-form">
+                <textarea id="job_description" placeholder="Paste Job Description" class="border p-2 mb-2 w-full h-24"></textarea>
+                <textarea id="resumes" placeholder="Paste Resumes (one per line)" class="border p-2 mb-2 w-full h-24"></textarea>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Rank Resumes</button>
+            </form>
+            <div id="ranked-list" class="mt-4"></div>
+            <textarea readonly id="resume-output" class="hidden p-2 h-48 border hidden whitespace-pre-wrap w-full"></textarea>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4">Email Automation</h2>
+            <button id="send-emails" class="bg-blue-500 text-white p-2 rounded">Send Emails to All Candidates</button>
+            <textarea id="email-output" class="mt-4 p-2 border rounded w-full bg-gray-100 hidden h-48" readonly></textarea>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4">Interview Scheduler</h2>
+            <div id="schedule-inputs" class="mb-4"></div>
+            <button id="schedule-interviews" class="bg-blue-500 text-white p-2 rounded">Schedule Interviews</button>
+            <textarea id="schedule-output" class="mt-4 p-2 border rounded w-full bg-gray-100 h-48 hidden" readonly></textarea>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex justify-between items-center">
+                Interview Agent
+                <button id="clear-chat" class="text-sm text-blue-500 hover:underline">Clear Chat</button>
+            </h2>
+            <form id="interview-form">
+                <textarea id="interview_job_description" placeholder="Paste Job Description" class="border p-2 mb-2 w-full h-24"></textarea>
+                <div id="chat-box" class="border p-2 mb-2 w-full h-48 overflow-y-auto bg-gray-50"></div>
+                <textarea id="candidate_response" placeholder="Your Response" class="border p-2 mb-2 w-full h-24"></textarea>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Send Response</button>
+            </form>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex justify-between items-center">
+                Hire Recommendation
+                <button id="load-transcript" class="text-sm text-blue-500 hover:underline">Load Chat Transcript</button>
+            </h2>
+            <form id="hire-form">
+                <textarea id="interview_transcript_hire" placeholder="Paste Interview Transcript" class="border p-2 mb-2 w-full h-48"></textarea>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Get Recommendation</button>
+            </form>
+            <textarea readonly id="hire-output" class="mt-4 p-2 bg-gray-100 rounded hidden whitespace-pre-wrap w-full h-48 border"></textarea>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4 flex justify-between items-center">
+                Sentiment Analyzer
+                <button id="gen-sample-transcript" class="text-sm text-blue-500 hover:underline">Generate Audio/Video Transcript</button>
+            </h2>
+            <form id="sentiment-form">
+                <textarea id="interview_transcript_sentiment" placeholder="Paste Interview Transcript" class="border p-2 mb-2 w-full h-48"></textarea>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Analyze Sentiment</button>
+            </form>
+            <textarea readonly id="sentiment-output" class="mt-4 p-2 bg-gray-100 rounded hidden whitespace-pre-wrap w-full h-48 border"></textarea>
+        </div>
+    </div>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
