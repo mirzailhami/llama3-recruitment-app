@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.13'  # Updated to 3.13
+        python-version: '3.9.18'  # Updated to 3.13
 
     - name: Install dependencies
       run: |
@@ -35,6 +35,6 @@ jobs:
 
     - name: Deploy to Elastic Beanstalk
       run: |
-        eb init recruitment-ai -p python-3.13 --region us-east-1  # Updated to 3.13
+        eb init recruitment-ai -p python-3.9 --region us-east-1
         eb use recruitment-ai-env
         eb deploy recruitment-ai-env
