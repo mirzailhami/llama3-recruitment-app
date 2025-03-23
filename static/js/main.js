@@ -27,9 +27,28 @@ document
   });
 
 document.getElementById("gen-resumes").addEventListener("click", async () => {
-  const data = await fetchJson("/generate_resumes");
-  const resumes = data.resumes;
-  document.getElementById("resumes").value = JSON.stringify(resumes, null, 2);
+  try {
+    // Get the job description from jd-output
+    const job_description = document.getElementById("jd-output").value;
+
+    if (!job_description) {
+      alert("Please generate a job description first in the JD Generator section.");
+      return;
+    }
+
+    // Send POST request to /generate_resumes with job_description
+    const data = await fetchJson("/generate_resumes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_description }),
+    });
+
+    const resumes = data.resumes || data.error;
+    document.getElementById("resumes").value = JSON.stringify(resumes, null, 2);
+  } catch (error) {
+    console.error("Error generating resumes:", error);
+    alert("An error occurred while generating resumes. Check the console.");
+  }
 });
 
 document
@@ -186,46 +205,47 @@ document.getElementById("send-emails").addEventListener("click", async () => {
 
 // InterviewScheduler
 document.getElementById('schedule-interviews').addEventListener('click', async () => {
-    try {
-        // Get the ranked resumes from the textarea
-        const rankedResumesText = document.getElementById('resume-output').value;
+  try {
+      // Get the ranked resumes from the textarea
+      const rankedResumesText = document.getElementById('resume-output').value;
 
-        if (!rankedResumesText) {
-            alert('Please rank resumes first.');
-            return;
-        }
+      if (!rankedResumesText) {
+          alert('Please rank resumes first.');
+          return;
+      }
 
-        // Parse the ranked resumes as JSON
-        const rankedResumes = JSON.parse(rankedResumesText);
+      // Parse the ranked resumes as JSON
+      const rankedResumes = JSON.parse(rankedResumesText);
 
-        // Collect the interview times
-        const interviewTimes = [];
-        rankedResumes.forEach((_, index) => {
-            const timeInput = document.getElementById(`interview_time_${index}`);
-            if (timeInput && timeInput.value) {
-                interviewTimes.push(timeInput.value);
-            }
-        });
+      // Collect the interview times
+      const interviewTimes = [];
+      rankedResumes.forEach((_, index) => {
+          const timeInput = document.getElementById(`interview_time_${index}`);
+          if (timeInput && timeInput.value) {
+              interviewTimes.push(timeInput.value);
+          }
+      });
 
-        if (interviewTimes.length === 0) {
-            alert('Please set at least one interview time.');
-            return;
-        }
+      // Disabled: Backend can handle empty interviewTimes with AI-generated times
+      // if (interviewTimes.length === 0) {
+      //     alert('Please set at least one interview time.');
+      //     return;
+      // }
 
-        // Send the data to the /schedule_interview endpoint
-        const data = await fetchJson('/schedule_interview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ranked_resumes: rankedResumes, interview_times: interviewTimes })
-        });
+      // Send the data to the /schedule_interview endpoint
+      const data = await fetchJson('/schedule_interview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ranked_resumes: rankedResumes, interview_times: interviewTimes })
+      });
 
-        // Display the schedule confirmations in the output textarea
-        document.getElementById('schedule-output').value = JSON.stringify(data, null, 2);
-        document.getElementById('schedule-output').classList.remove('hidden');
-    } catch (error) {
-        console.error('Error scheduling interviews:', error);
-        alert('An error occurred while scheduling interviews. Please check the console for details.');
-    }
+      // Display the schedule confirmations in the output textarea
+      document.getElementById('schedule-output').value = JSON.stringify(data, null, 2);
+      document.getElementById('schedule-output').classList.remove('hidden');
+  } catch (error) {
+      console.error('Error scheduling interviews:', error);
+      alert('An error occurred while scheduling interviews. Please check the console for details.');
+  }
 });
 
 // InterviewAgent

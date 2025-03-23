@@ -27,7 +27,7 @@ The system provides the following RESTful endpoints:
 | `/`                           | GET    | Serves the frontend HTML page           | N/A                                                                                                              | HTML content                                                                                    |
 | `/test`                       | GET    | Verifies server status                  | N/A                                                                                                              | `{"message": "Server is alive!"}`                                                               |
 | `/generate_requirements`      | GET    | Generates sample hiring requirements    | N/A                                                                                                              | `{"job_title": "Web Developer", "skills": ["Python", "JavaScript"], "experience_level": "Mid"}` |
-| `/generate_resumes`           | GET    | Generates 5-10 sample resumes           | N/A                                                                                                              | `{"resumes": ["Jane Doe, 4 years...", "John Smith, 2 years..."]}`                               |
+| `/generate_resumes`           | POST    | Generates 5-10 sample resumes           | N/A                                                                                                              | `{"resumes": ["Jane Doe, 4 years...", "John Smith, 2 years..."]}`                               |
 | `/generate_jd`                | POST   | Creates a job description               | `{"job_title": "Software Engineer", "skills": ["Python", "SQL"], "experience_level": "Mid"}`                     | `{"job_description": "# Software Engineer\n..."}`                                               |
 | `/rank_resumes`               | POST   | Ranks resumes against a job description | `{"job_description": "# Software Engineer\n...", "resumes": ["Jane Doe, 4 years...", "John Smith, 2 years..."]}` | `{"ranked_resumes": "- Jane Doe: 90...\n- John Smith: 60..."}`                                  |
 | `/automate_email`             | POST   | Simulates email automation              | `{"ranked_resumes": "- Jane Doe: 90...\n- John Smith: 60...", "job_description": "# Software Engineer\n..."}`    | `[{"status": "success", "to": "jane.doe@example.com", "subject": "Interview Invite"}] `         |
@@ -46,12 +46,17 @@ The system provides the following RESTful endpoints:
    - Project structure:
      ```
      /llama3-recruitment-app
-     ├── /static/js/main.js
-     ├── /templates/index.html
-     ├── app.py
-     ├── agents.py
-     ├── utils.py
-     ├── requirements.txt
+      ├── README.md
+      ├── agents.py
+      ├── app.py
+      ├── requirements.txt
+      ├── static
+      │   └── js
+      │       └── main.js
+      ├── templates
+      │   └── index.html
+      ├── utils.py
+      └── video.mp4
      ```
 
 2. **Installation**:
@@ -103,6 +108,8 @@ eb init -p python-3.9 recruitment-ai --region us-east-1
 eb create recruitment-ai-env
 ```
 
+Note: Ensure you have necessary permissions to interact with AWS Elastic Beanstalk
+
 4. **Set Environment Variables** (optional):
 
 ```
@@ -126,30 +133,52 @@ To automate deployment:
 1. **Workflow File**: Create `.github/workflows/deploy.yml`:
 
 ```
-name: Deploy to Elastic Beanstalk
-   on:
-     push:
-       branches: [main]
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       steps:
-       - uses: actions/checkout@v3
-       - name: Set up Python
-         uses: actions/setup-python@v4
-         with:
-           python-version: '3.9'
-       - name: Install dependencies
-         run: pip install -r requirements.txt
-       - name: Deploy to EB
-         uses: einaregilsson/beanstalk-deploy@v21
-         with:
-           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-           application_name: recruitment-ai
-           environment_name: recruitment-ai-env
-           version_label: ${{ github.sha }}
-           region: us-east-1
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install EB CLI
+        run: pip install awsebcli --upgrade
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+
+      - name: List Elastic Beanstalk environments
+        run: aws elasticbeanstalk describe-environments --application-name recruitment-ai
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          eb init recruitment-ai -p python-3.9 --region us-east-1
+          eb use recruitment-ai-env
+          eb deploy recruitment-ai-env
 ```
 
 2. **Secrets**: Add `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in GitHub repo Settings > Secrets and variables > Actions.
@@ -158,7 +187,6 @@ name: Deploy to Elastic Beanstalk
 
 - **Local**: Run locally and test all agents via the UI at `http://localhost:5000`.
 - **Live**: http://recruitment-ai-env.eba-2ndqjfk6.us-east-1.elasticbeanstalk.com
-- **Video**: A 5-minute walkthrough video should be included in the challenge submission ZIP, demonstrating all agents.
 
 ## Dependencies
 

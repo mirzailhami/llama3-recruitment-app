@@ -28,10 +28,12 @@ def generate_requirements_endpoint():
         logging.error(f"Requirements generation error: {str(e)}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
-@app.route('/generate_resumes', methods=['GET'])
+@app.route('/generate_resumes', methods=['POST'])
 def generate_resumes_endpoint():
     try:
-        resumes = generate_resumes()
+        data = request.get_json() or {}
+        job_description = data.get('job_description', '# Generic Job\nSkills: Python, Java\nExperience: Mid')
+        resumes = generate_resumes(job_description)
         return jsonify({'resumes': resumes})
     except Exception as e:
         logging.error(f"Resume generation error: {str(e)}")
@@ -93,8 +95,8 @@ def schedule_interview_endpoint():
         ranked_resumes = data.get('ranked_resumes', [])
         interview_times = data.get('interview_times', [])
 
-        if not ranked_resumes or not interview_times:
-            return jsonify({'error': 'Missing ranked_resumes or interview_times'}), 400
+        # if not ranked_resumes or not interview_times:
+        #     return jsonify({'error': 'Missing ranked_resumes or interview_times'}), 400
 
         # Call the schedule_interview function
         confirmations = schedule_interview(ranked_resumes, interview_times)

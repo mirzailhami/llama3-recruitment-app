@@ -42,17 +42,29 @@
                 <button type="submit" class="bg-blue-500 text-white p-2 rounded">Rank Resumes</button>
             </form>
             <div id="ranked-list" class="mt-4"></div>
-            <textarea readonly id="resume-output" class="hidden bg-gray-50 p-2 h-48 border hidden whitespace-pre-wrap w-full"></textarea>
+            <textarea readonly id="resume-output" class="hidden mt-4 bg-gray-50 p-2 h-48 border hidden whitespace-pre-wrap w-full"></textarea>
         </div>
 
         <div class="bg-white p-4 rounded shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4">Email Automation</h2>
+            <h2 class="text-xl font-semibold mb-4">
+                Email Automation
+            </h2>
+            <ul role="list" class="mb-4 space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400"> 
+                <li>If candidate score >= 70, he/she will get an interview invitation email</li>
+                <li>If score < 70, he/she will get a rejection email</li>
+            </ul>
             <button id="send-emails" class="bg-blue-500 text-white p-2 rounded">Send Emails to All Candidates</button>
             <textarea id="email-output" class="mt-4 p-2 border rounded w-full bg-gray-100 hidden h-48" readonly></textarea>
         </div>
 
         <div class="bg-white p-4 rounded shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4">Interview Scheduler</h2>
+            <h2 class="text-xl font-semibold mb-4">
+                Interview Scheduler
+            </h2>
+            <ul role="list" class="mb-4 space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">Hybrid approach: 
+                <li>If schedule time not provided, backend generates AI-proposed times for each candidate within the next 7 days (Monday-Friday, 9 AM - 5 PM EST)</li>
+                <li>If schedule time are entered, the backend uses them, maintaining compatibility with manual input</li>
+            </ul>
             <div id="schedule-inputs" class="mb-4"></div>
             <button id="schedule-interviews" class="bg-blue-500 text-white p-2 rounded">Schedule Interviews</button>
             <textarea id="schedule-output" class="mt-4 p-2 border rounded w-full bg-gray-100 h-48 hidden" readonly></textarea>
