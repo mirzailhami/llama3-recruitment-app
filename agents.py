@@ -6,12 +6,17 @@ import time
 from utils import call_llama3, extract_markdown_block, extract_json_block
 
 def generate_hiring_requirements():
-    prompt = """
-    You are an AI agent tasked with generating hiring requirements for a single job. Provide exactly one JSON object with:
+    prompt = f"""
+    You are an AI agent tasked with generating hiring requirements for a single job. Generate exactly one JSON object containing:
     - job_title (e.g., 'Data Analyst', 'Web Developer')
     - skills (list of 4-6 relevant skills)
     - experience_level ('Entry', 'Mid', or 'Senior')
-    Format the response as a single, valid JSON string enclosed in triple backticks (```) and nothing else.
+    Return only one valid JSON object enclosed in triple backticks (```) with no additional objects, text, comments, or examples outside the JSON.
+    Example format (for reference, do not include in output):
+    ```
+    {{"job_title": "Data Scientist", "skills": ["Python", "SQL", "Machine Learning", "Statistics"], "experience_level": "Mid"}}
+    ```
+    Start with ``` and end with ```.
     """
     return extract_json_block(call_llama3(prompt))
 
@@ -108,14 +113,15 @@ def generate_resumes(job_description, num_resumes=None):
     
 def generate_jd(job_title, skills, experience_level):
     prompt = f"""
-    You are an AI agent for generating job descriptions. Create a detailed job description for:
+    You are an AI agent for generating job descriptions. Create exactly one detailed job description for:
     - Job Title: {job_title}
     - Required Skills: {', '.join(skills)}
     - Experience Level: {experience_level}
-    The output should be in markdown format, including sections for 'Overview', 'Responsibilities', 'Qualifications', and 'Benefits'.
-    Return the job description as plain text without additional commentary.
+    The output must be a single job description in markdown format with sections: 'Overview', 'Responsibilities', 'Qualifications', and 'Benefits'.
+    Return the job description as plain text enclosed in triple backticks (```) with no additional job descriptions, commentary, or examples.
+    Start with ``` and end with ```.
     """
-    return call_llama3(prompt)
+    return extract_markdown_block(call_llama3(prompt))
 
 def rank_resumes(job_description, resumes):
     try:
@@ -466,9 +472,10 @@ def analyze_sentiment(interview_transcript):
     prompt = f"""
     You are an AI agent for sentiment analysis. Given this interview transcript:
     {interview_transcript}
-    Analyze the sentiment and emotional tone, indicating:
-    - Confidence level (High, Medium, Low)
-    - Emotional tone (e.g., Positive, Neutral, Negative)
-    Return the analysis in markdown format without additional commentary.
+    Analyze the sentiment and emotional tone in exactly two concise lines:
+    - Confidence level: High, Medium, or Low
+    - Emotional tone: Positive, Neutral, or Negative
+    Return the analysis in markdown format within triple backticks (```) with no additional text or explanations.
+    Start with ``` and end with ```.
     """
-    return call_llama3(prompt)
+    return extract_markdown_block(call_llama3(prompt))
