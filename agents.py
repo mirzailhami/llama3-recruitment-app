@@ -472,9 +472,11 @@ def analyze_sentiment(interview_transcript):
     prompt = f"""
     You are an AI agent for sentiment analysis. Given this interview transcript:
     {interview_transcript}
-    Analyze the sentiment and emotional tone in exactly two concise lines:
+    Analyze the sentiment, emotional tone, engagement and enthusiasm in exactly eight or ten concise lines with short summary or explanation of each:
     - Confidence level: High, Medium, or Low
     - Emotional tone: Positive, Neutral, or Negative
+    - Engagement level: High, Medium, or Low
+    - Enthusiasm: High, Medium, or Low
     Return the analysis in markdown format within triple backticks (```) with no additional text or explanations.
     Start with ``` and end with ```.
     """
