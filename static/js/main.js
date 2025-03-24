@@ -152,7 +152,8 @@ document.getElementById('resume-form').addEventListener('submit', async (e) => {
             body: JSON.stringify({ job_description, resumes: resumesArray })
         });
 
-        // Display the ranked resumes in the output textarea
+        // Sort the ranked_resumes and display in the output textarea
+        data.ranked_resumes = data.ranked_resumes.sort((a,b) => b.score - a.score);
         document.getElementById('resume-output').value = JSON.stringify(data.ranked_resumes, null, 2);
         document.getElementById('resume-output').classList.remove('hidden');
 
