@@ -1,3 +1,9 @@
+# 🏆 Award-Winning Solution: Topcoder Challenge Winner
+
+**We're proud to announce that this AI-driven recruitment system won the [Llama Agentic AI Recruitment Challenge](https://www.topcoder.com/challenges/587a7edf-481c-483f-9545-f83a76052513?tab=winners) on Topcoder.** This recognition validates our innovative approach to automating the hiring process using Llama 3.x and specialized AI agents.
+
+---
+
 # Recruitment AI System
 
 ## Overview
@@ -16,7 +22,12 @@ This is an AI-driven recruitment system built for the Llama Agentic AI Recruitme
 
 ## Llama 3.x Integration
 
-All AI functionalities are powered by Llama 3.x, accessed through AWS Bedrock. Prompts are carefully designed to produce consistent, markdown-formatted outputs, fulfilling the challenge's requirement for Llama integration.
+All AI functionalities are powered by [Meta Llama 3](https://github.com/meta-llama/llama3), accessed through [AWS Bedrock](https://aws.amazon.com/bedrock/). This combination provides:
+- State-of-the-art LLM capabilities from Meta's open-weight models
+- Scalable, secure deployment via AWS's fully managed service
+- Enterprise-grade reliability and performance
+
+Prompts are carefully designed to produce consistent, markdown-formatted outputs, fulfilling the challenge's requirement for Llama integration while leveraging Bedrock's API stability.
 
 ## REST API Endpoints
 
